@@ -1,6 +1,11 @@
 import dotenv from 'dotenv';
-import { Client } from 'discord.js';
-import { Intents } from 'discord.js';
+import { Client, Constants, Intents, Message, MessageEmbed } from 'discord.js';
+import { Profanity, ProfanityOptions } from '@2toad/profanity';
+
+const botProfanityOptions = new ProfanityOptions();
+botProfanityOptions.wholeWord = true;
+
+const botProfanity = new Profanity(botProfanityOptions);
 
 dotenv.config();
 var botIntents = [Intents.FLAGS.DIRECT_MESSAGES, 
@@ -11,46 +16,68 @@ var botIntents = [Intents.FLAGS.DIRECT_MESSAGES,
                     Intents.FLAGS.GUILD_MEMBERS];
 
 const client = new Client({intents: botIntents});
-
 client.on("ready", () => {
     console.log("powered up!😎");
 });
 
-function mentionUser(id){
-    return '<@'+ id+'>';
+function formatMessage(msg) {
+    return {
+        "type": "rich",
+        "title": msg,
+        "color": 0xa4c718
+      }
 }
 
 client.on('messageCreate', msg =>{
+    var angrytanjiro = client.emojis.cache.get("917390758472982528");
+    angrytanjiro = angrytanjiro == null ? '😠': angrytanjiro;
     var msgcontent = msg.content;
     var supportedcmd = false;
     if(msg.author.bot)
     {
         return;
     }
+    if(botProfanity.exists(msgcontent.toString()))
+    {
+        var emoji = '';
+        if(angrytanjiro != null)
+        {
+            emoji += `${angrytanjiro}`;
+        }
+        var profaneMsgReply = `I hear profanity and I don't like it!`;
+        msg.channel.send(profaneMsgReply);
+        msg.channel.send(angrytanjiro);
+        return;
+    }
     if(msgcontent.startsWith('&'))
     {
-        msgcontent = msgcontent.substr(1);
+        msgcontent= msgcontent.substring(1);
         supportedcmd = true;
     }
     if(supportedcmd)
     {
+        var retmsg = msg.author.tag + ", ";
         if(msgcontent === "help" || msgcontent === "h")
         {
-            msg.channel.send("I only support date for now so try typing &date");
+            retmsg += "I only support date for now so try typing &date and &invite";
         }
         else if(msgcontent === "date")
         {
             const date = new Date();
-            var retmsg = mentionUser(msg.author.id) + " here's today's date: " + date.toLocaleString();
-            msg.channel.send(retmsg);
+            retmsg += "here's your local time: " + date.toLocaleString();
+        }
+        else if(msgcontent === "invite")
+        {
+            msg.author.send("https://discord.gg/2GZEJ2nx");
+            msg.reply("I sent an invite link to your DM!");
+            return;
         }
         else
         {
-            var retmsg = mentionUser(msg.author.id) +" I got your msg but I don't know what to do with it at the moment!";
-            msg.channel.send(retmsg);
+            retmsg += " I got your msg but I don't know what to do with it at the moment!"
         }
+        msg.channel.send({embeds: [formatMessage(retmsg)]});
     }
-    
 });
 
 client.login(process.env.BOT_TOKEN)
