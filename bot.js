@@ -43,10 +43,10 @@ client.on('messageCreate', msg =>{
         if(angrytanjiro != null)
         {
             emoji += `${angrytanjiro}`;
+            //msg.channel.send(angrytanjiro);
         }
-        var profaneMsgReply = `I hear profanity and I don't like it!`;
+        var profaneMsgReply = `I'm going to pretend I didn't see that`;
         msg.channel.send(profaneMsgReply);
-        msg.channel.send(angrytanjiro);
         return;
     }
     if(msgcontent.startsWith('&'))
